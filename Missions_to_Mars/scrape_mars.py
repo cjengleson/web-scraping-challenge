@@ -144,8 +144,8 @@ def scrape():
     # setup splinter and connect to site
     executable_path = {"executable_path": ChromeDriverManager().install()}
     browser = Browser("chrome", **executable_path, headless=False)
-    hemi_url = "https://marshemispheres.com/"
-    browser.visit(hemi_url)
+    url = "https://marshemispheres.com/"
+    browser.visit(url)
 
     # In[24]:
 
@@ -161,13 +161,13 @@ def scrape():
             hemi + " Hemisphere Enhanced").click()
 
         # create bs object
-        hemi_html = browser.html
-        soup = bs(hemi_html, "html.parser")
+        html = browser.html
+        soup = bs(html, "html.parser")
 
         # find image url
         li = soup.find_all("li")
         a = li[0].find("a")
-        image_url = url + a["href"]
+        image_url = url+a["href"]
 
         # add image url to dictionary
         hemisphere_entries.append(
@@ -195,7 +195,14 @@ def scrape():
         "article_paragraph": paragraph,
         "featured_image_url": featured_image_url,
         "fact_table": html_table,
-        "hemisphere_data": hemisphere_image_urls
+        "cerberus_title": hemisphere_image_urls[0]["title"],
+        "cerberus_image": hemisphere_image_urls[0]["img_url"],
+        "schiaparelli_title": hemisphere_image_urls[1]["title"],
+        "schiaparelli_image": hemisphere_image_urls[1]["img_url"],
+        "syrtis_major_title": hemisphere_image_urls[2]["title"],
+        "syrtis_major_image": hemisphere_image_urls[2]["img_url"],
+        "valles_marineris_title": hemisphere_image_urls[3]["title"],
+        "valles_marineris_image": hemisphere_image_urls[3]["img_url"]
     }
 
     # In[28]:
@@ -203,3 +210,5 @@ def scrape():
     return(mars_dictionary)
 
     # In[ ]:
+
+# %%
