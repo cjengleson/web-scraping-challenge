@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[14]:
 
-####################################
+
 # import dependencies
-####################################
 import os
 import pandas as pd
 import requests
@@ -16,188 +15,191 @@ import time
 from pprint import pprint
 from webdriver_manager.chrome import ChromeDriverManager
 
-####################################
-# NASA Mars News 
 
-# Scrape the Mars News Site and collect the latest News Title and Paragraph Text. 
+def scrape():
+    #######################################
+    # NASA Mars News
+    #######################################
 
-# Assign the text to variables that you can reference later.
-####################################
-# In[2]:
+    # Scrape the Mars News Site and collect the latest News Title and Paragraph Text.
 
+    # Assign the text to variables that you can reference later.
 
-# setup splinter and connect to site
-executable_path = {"executable_path": ChromeDriverManager().install()}
-browser = Browser("chrome", **executable_path, headless = False)
-url = "https://redplanetscience.com"
-browser.visit(url)
-html = browser.html
+    # In[15]:
 
+    # setup splinter and connect to site
+    executable_path = {"executable_path": ChromeDriverManager().install()}
+    browser = Browser("chrome", **executable_path, headless=False)
+    url = "https://redplanetscience.com"
+    browser.visit(url)
+    html = browser.html
 
-# In[3]:
+    # In[16]:
 
+    # create bs object and parse html
+    soup = bs(html, "html.parser")
 
-# create bs object and parse html
-soup = bs(html, "html.parser")
+    # In[17]:
 
+    # scrape first news title & paragraph
+    title = soup.find_all("div", class_="content_title")
+    title = title[0].text
 
-# In[4]:
+    paragraph = soup.find_all("div", class_="article_teaser_body")
+    paragraph = paragraph[0].text
 
+    print(title)
+    print("--------------------------------------------")
+    print(paragraph)
 
-# scrape first news title & paragraph
-title = soup.find_all("div", class_ = "content_title")
-title = title[0].text
+    browser.quit()
 
-paragraph = soup.find_all("div", class_ = "article_teaser_body")
-paragraph = paragraph[0].text
+    #######################################
+    # JPL Mars Space Images - Featured Image
+    #######################################
 
-print(title)
-print("--------------------------------------------")
-print(paragraph)
+    # Visit the url for the Featured Space Image site at https://spaceimages-mars.com/.
 
-####################################
-# JPL Mars Space Images - Featured Image
+    # Use splinter to navigate the site and find the image url for the current
+    # Featured Mars Image and assign the url string to a variable called featured_image_url.
 
-# Visit the url for the Featured Space Image site at https://spaceimages-mars.com/.
+    # Make sure to find the image url to the full size .jpg image.
 
-# Use splinter to navigate the site and find the image url for the current 
-# Featured Mars Image and assign the url string to a variable called featured_image_url.
+    # Make sure to save a complete url string for this image.
 
-# Make sure to find the image url to the full size .jpg image.
+    # In[18]:
 
-# Make sure to save a complete url string for this image.
-####################################
-# In[7]:
+    # setup splinter and connect to site
+    executable_path = {"executable_path": ChromeDriverManager().install()}
+    browser = Browser("chrome", **executable_path, headless=False)
+    jpl_url = "https://spaceimages-mars.com/"
+    browser.visit(jpl_url)
+    jpl_html = browser.html
 
+    # In[19]:
 
-# setup splinter and connect to site
-executable_path = {"executable_path": ChromeDriverManager().install()}
-browser = Browser("chrome", **executable_path, headless = False)
-jpl_url = "https://spaceimages-mars.com/"
-browser.visit(jpl_url)
-jpl_html = browser.html
+    # create bs object and parse html
+    jpl_soup = bs(jpl_html, "html.parser")
 
+    # In[20]:
 
-# In[8]:
+    # find image url and assign to variable
+    images = jpl_soup.find_all("img", class_="headerimage fade-in")
+    for image in images:
+        featured_image_url = (image["src"])
 
+    featured_image_url = "https://spaceimages-mars.com/" + featured_image_url
+    print(featured_image_url)
 
-# create bs object and parse html
-jpl_soup = bs(jpl_html, "html.parser")
+    browser.quit()
 
+    #######################################
+    # Mars Facts
+    #######################################
 
-# In[10]:
+    # Visit the Mars Facts webpage at https://galaxyfacts-mars.com/ and use
+    # Pandas to scrape the table containing facts about the planet including Diameter, Mass, etc.
 
+    # Use Pandas to convert the data to a HTML table string.
 
-# find image url and assign to variable
-images = jpl_soup.find_all("img", class_ = "headerimage fade-in")
-for image in images:
-    featured_image_url = (image["src"])
-    
-featured_image_url = "https://spaceimages-mars.com/" + featured_image_url
-print(featured_image_url)
+    # In[21]:
 
-####################################
-# Mars Facts
+    # set url
+    facts_url = "https://galaxyfacts-mars.com/"
 
-# Visit the Mars Facts webpage at https://galaxyfacts-mars.com/ and 
-# use Pandas to scrape the table containing facts about the planet including Diameter, Mass, etc.
+    # read tables
+    tables = pd.read_html(facts_url)
 
-# Use Pandas to convert the data to a HTML table string.
-####################################
-# In[22]:
+    # convert table to df
+    table_df = pd.DataFrame(tables[1])
+    table_df.columns = ["Characteristic", "Value"]
+    table_df
 
+    # In[22]:
 
-# set url
-facts_url = "https://galaxyfacts-mars.com/"
+    # convert df to html table string
+    html_table = table_df.to_html()
+    html_table
 
-# read tables
-tables = pd.read_html(facts_url)
+    #######################################
+    # Mars Hemispheres
+    #######################################
 
-# convert table to df
-table_df = pd.DataFrame(tables[1])
-table_df.columns = ["Characteristic", "Value"]
-table_df
+    # Visit the astrogeology site at https://marshemispheres.com/ to obtain
+    # high resolution images for each of Mar's hemispheres.
 
+    # You will need to click each of the links to the hemispheres
+    # in order to find the image url to the full resolution image.
 
-# In[24]:
+    # Save both the image url string for the full resolution hemisphere image,
+    # and the Hemisphere title containing the hemisphere name.
 
+    # Use a Python dictionary to store the data using the keys img_url and title.
 
-# convert df to html table string
-html_table = table_df.to_html()
-html_table
+    # Append the dictionary with the image url string and the hemisphere title to a list.
+    # This list will contain one dictionary for each hemisphere.
 
-####################################
-# Mars Hemispheres
+    # In[23]:
 
-# Visit the astrogeology site at https://marshemispheres.com/ to 
-# obtain high resolution images for each of Mar's hemispheres.
+    # setup splinter and connect to site
+    executable_path = {"executable_path": ChromeDriverManager().install()}
+    browser = Browser("chrome", **executable_path, headless=False)
+    hemi_url = "https://marshemispheres.com/"
+    browser.visit(hemi_url)
 
-# You will need to click each of the links to the hemispheres in 
-# order to find the image url to the full resolution image.
+    # In[24]:
 
-# Save both the image url string for the full resolution hemisphere 
-# image, and the Hemisphere title containing the hemisphere name. 
+    # set up lists
+    hemispheres = ["Cerberus", "Schiaparelli",
+                   "Syrtis Major", "Valles Marineris"]
+    hemisphere_entries = []
 
-# Use a Python dictionary to store the data using the keys img_url and title.
+    for hemi in hemispheres:
 
-# Append the dictionary with the image url string and the hemisphere 
-# title to a list. This list will contain one dictionary for each hemisphere.
-####################################
-# In[26]:
+        # click into individual link
+        browser.links.find_by_partial_text(
+            hemi + " Hemisphere Enhanced").click()
 
+        # create bs object
+        hemi_html = browser.html
+        soup = bs(hemi_html, "html.parser")
 
-# setup splinter and connect to site
-executable_path = {"executable_path": ChromeDriverManager().install()}
-browser = Browser("chrome", **executable_path, headless = False)
-hemi_url = "https://marshemispheres.com/"
-browser.visit(hemi_url)
+        # find image url
+        li = soup.find_all("li")
+        a = li[0].find("a")
+        image_url = url + a["href"]
 
+        # add image url to dictionary
+        hemisphere_entries.append(
+            {"title": hemi + " Hemisphere Enhanced", "img_url": image_url})
 
-# In[31]:
+        # click back button
+        browser.links.find_by_partial_text("Back").click()
 
+    browser.quit()
 
-# set up lists
-hemispheres = ["Cerberus", "Schiaparelli", "Syrtis Major", "Valles Marineris"]
-hemisphere_entries = []
+    # In[25]:
 
-for hemi in hemispheres:
-    
-    # click into individual link
-    browser.links.find_by_partial_text(hemi + " Hemisphere Enhanced").click()
-    
-    # create bs object
-    hemi_html = browser.html
-    soup = bs(hemi_html, "html.parser")
-    
-    # find image url
-    li = soup.find_all("li")
-    a = li[0].find("a")
-    image_url = url + a["href"]
-    
-    # add image url to dictionary
-    hemisphere_entries.append({"title": hemi + " Hemisphere Enhanced", "img_url": image_url})
-    
-    # click back button
-    browser.links.find_by_partial_text("Back").click()
-    
+    # view scraped hemisphere entries
+    hemisphere_entries
 
+    # In[26]:
 
-# In[32]:
+    hemisphere_image_urls = hemisphere_entries
+    hemisphere_image_urls
 
+    # In[27]:
 
-# view scraped hemisphere entries
-hemisphere_entries
+    mars_dictionary = {
+        "article_title": title,
+        "article_paragraph": paragraph,
+        "featured_image_url": featured_image_url,
+        "fact_table": html_table,
+        "hemisphere_data": hemisphere_image_urls
+    }
 
+    # In[28]:
 
-# In[33]:
+    return(mars_dictionary)
 
-
-hemisphere_image_urls = hemisphere_entries
-hemisphere_image_urls
-
-
-# In[ ]:
-
-
-
-
+    # In[ ]:

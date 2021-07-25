@@ -1,22 +1,36 @@
-# 1. import Flask
-from flask import Flask
+# import Flask
+from flask import Flask, render_template, redirect
+from flask_pymongo import PyMongo
 
-# 2. Create an app, being sure to pass __name__
+# create an app, being sure to pass __name__
 app = Flask(__name__)
 
+# create flask_pymongo -> mongo connection
+app.config["MONGO_URI"] = "mongodb://localhost:27017/mars_db"
+mongo = PyMongo(app)
 
-# 3. Define what to do when a user hits the index route
+# index route
+
+
 @app.route("/")
-def home():
-    print("Server received request for 'Home' page...")
-    return "Welcome to my 'Home' page!"
+def index():
+    db_info = mongo.db.mars_info.find_one()
+    return render_template("index.html", mars_info=db_info)
+
+# scrape route
 
 
-# 4. Define what to do when a user hits the /about route
-@app.route("/about")
-def about():
-    print("Server received request for 'About' page...")
-    return "Welcome to my 'About' page!"
+@app.route("/scrape")
+def scraper():
+    from scrape_mars import scrape
+
+    info = scrape()
+
+    mars_collection = mongo.db.mars_info
+    mars_collection.drop()
+    mars_collection.update({}, info, upsert=True)
+
+    return redirect("/", code=302)
 
 
 if __name__ == "__main__":
